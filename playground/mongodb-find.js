@@ -7,19 +7,27 @@ MongoClient.connect('mongodb://localhost:27017/TodoApp', (err, db) => { //err on
     }
     console.log('Connected to mongodb server');
 
-    // db.collection('Todos').find({completed: false}).toArray().then((docs) => {
-    //     console.log('Todos');
-    //     console.log(JSON.stringify(docs, undefined, 2));
-    // }, (err) => {
-    //     console.log('unable to fetch todos', err);
+    //deleteMany
+    // db.collection('Todos').deleteMany({text: 'eat lunch'}).then((result) => {
+    //     console.log(result);
     // });
 
-    db.collection('Users').find({name: "alex"}).toArray().then((docs) => {
-        console.log(JSON.stringify(docs, undefined, 2));
-    }, (err) => {
-        console.log('unable to fetch todos', err);
+    //deleteOne
+    // db.collection('Todos').deleteOne({text: 'eat lunch'}).then((result) => {
+    //     console.log(result);
+    // });
+
+    //findOneAndDelete
+    db.collection('Todos').findOneAndDelete({completed: false}).then((result) => {
+        console.log(result);
     });
 
     //db.close();
 });
 
+
+
+
+/**
+ * I ACCIDENTALLY OVERWROTE THE "FIND" EXAMPLE WITH THE "DELETE EXAMPLE" SHOULD REWATCH THE FIND VIDEO IF YOU NEED THAT STUFF AGAIN
+ */
