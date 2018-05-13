@@ -4,10 +4,16 @@ const request = require('supertest');
 const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
 
+const todos = [{
+    text: 'first test todo'
+}, {
+    text: 'second test todo'
+}];
+
 beforeEach((done) => { //we make a big assumption down below that the database will be empty before we run any tests
     Todo.remove({}).then(() => { //this beforeEach call will run "before each" test, and will empty the database each time
-        done();
-    });
+        return Todo.insertMany(todos);
+    }).then(() => done());
 });
 
 describe('POST /todos', () => { //describe the test block
@@ -27,7 +33,7 @@ describe('POST /todos', () => { //describe the test block
             }
             
             //but we're not done! need to also verify the database state
-            Todo.find().then((todos) => { //find our Todo collection
+            Todo.find({text}).then((todos) => { //find our Todo collection
                 expect(todos.length).toBe(1); //we've added 1 todo, length should be 1
                 expect(todos[0].text).toBe(text); //verify that the todo got the correct text
                 done(); //end the test
@@ -46,10 +52,22 @@ describe('POST /todos', () => { //describe the test block
             }
 
             Todo.find().then((todos) => {
-                expect(todos.length).toBe(0);
+                expect(todos.length).toBe(2);
                 done();
             }).catch((e) => done(e));
         })
+    });
+});
+
+describe('GET /todos', () => {
+    it('should get all todos', (done) => {
+        request(app)
+        .get('/todos')
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.todos.length).toBe(2);
+        })
+        .end(done);
     });
 });
 
