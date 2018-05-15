@@ -1,12 +1,15 @@
 const expect = require('expect');
 const request = require('supertest');
+const {ObjectID} = require('mongodb');
 
 const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
 
 const todos = [{
+    _id: new ObjectID(), 
     text: 'first test todo'
 }, {
+    _id: new ObjectID(),
     text: 'second test todo'
 }];
 
@@ -17,7 +20,7 @@ beforeEach((done) => { //we make a big assumption down below that the database w
 });
 
 describe('POST /todos', () => { //describe the test block
-    it('should create a new todo', (done) => {
+    it('should create a new todo', (done) => { //asynchronous test, so we need to specify the done argument
         var text = 'test todo text'; //dummy test data
 
         request(app) //begin your http request
@@ -67,6 +70,39 @@ describe('GET /todos', () => {
         .expect((res) => {
             expect(res.body.todos.length).toBe(2);
         })
+        .end(done);
+    });
+});
+
+describe('GET /todos/:id', () => {
+    it ('should return todo doc', (done) => {
+        request(app)
+        .get(`/todos/${todos[0]._id.toHexString()}`)
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.todo.text).toBe(todos[0].text);
+        })
+        .end(done);
+    });
+
+    it('should return a 404 if todo not found', (done) => {
+        //make req using real obj id
+        //call its toHexString method and newObjectID
+        //will be a valid id but not found in colleciton so should get 404 back
+        //only expectation is that status code. make sure you get 404
+        var id = new ObjectID();
+        request(app)
+        .get(`/todos/${id.toHexString()}`)
+        .expect(404)
+        .end(done);
+    });
+
+    it('should return a 404 for non-object ids', (done) => {
+        //pass in a url  like this: /todos/123
+        //not a valid obj id so should fail and we get a 404
+        request(app)
+        .get('/todos/123')
+        .expect(404)
         .end(done);
     });
 });
