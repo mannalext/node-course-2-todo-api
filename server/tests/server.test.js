@@ -10,7 +10,9 @@ const todos = [{
     text: 'first test todo'
 }, {
     _id: new ObjectID(),
-    text: 'second test todo'
+    text: 'second test todo',
+    completed: true,
+    completedAt: 333
 }];
 
 beforeEach((done) => { //we make a big assumption down below that the database will be empty before we run any tests
@@ -143,7 +145,57 @@ describe('DELETE /todos/:id', () => {
         .expect(404)
         .end(done);
     });
-})
+});
+
+describe('PATCH /todos/:id', () => {
+    it('should update the todo', (done) => {
+        //grab id of the first item
+        //make patch request. provide proper url with id. use send to send data along with body
+        //update text, set completed = true
+        //assert 200
+        //assert res.body has text property equal to test you sent in, completed true, completedAt is number (toBeA)
+        var hexId = todos[0]._id.toHexString();
+        var text = 'the new text';
+
+        request(app)
+        .patch(`/todos/${hexId}`)
+        .send({
+            text: text,
+            completed: true
+        })
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.todo.text).toBe(text);
+            expect(res.body.todo.completed).toBe(true);
+            expect(res.body.todo.completedAt).toBeA('number');
+        })
+        .end(done);
+    });
+
+    it('should clear completedAt when todo is not complete', (done) => {
+        var hexId = todos[1]._id.toHexString();
+        var text = 'new text 2';
+
+        request(app)
+        .patch(`/todos/${hexId}`)
+        .send({
+            text: text,
+            completed: false
+        })
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.todo.text).toBe(text);
+            expect(res.body.todo.completed).toBe(false);
+            expect(res.body.todo.completedAt).toNotExist();
+        })
+        .end(done);
+        //grab id of second todo item
+        //update text to something different
+        //set completed to false
+        //assert 200
+        //assert res.body has new text, completed = false, completedAt is null (toNotExist)
+    });
+});
 
 //send empty object
 //expect 400
