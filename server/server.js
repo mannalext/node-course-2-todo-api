@@ -7,6 +7,7 @@ const {ObjectID} = require('mongodb');
 var {mongoose} = require('./db/mongoose.js');
 var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
+var {authenticate} = require('./middleware/authenticate');
 
 //server js is just going to be responsible for our routes
 //need express for that (remember middleware?)
@@ -111,6 +112,29 @@ app.post('/users', (req, res) => {
     })
 });
 
+
+app.get('/users/me', authenticate, (req, res) => {
+    //ALL OF THIS IS UNNECESSARY WITH THE ADDITION OF AUTHENTICATE
+    // var token = req.header('x-auth');
+
+    // User.findByToken(token).then((user) => {
+    //     if (!user) {
+    //         return Promise.reject();
+    //         /* could just do res.status(401).send() like we do below. however, that's code duplication.
+    //         instead, can return Promise.reject(). same thing we're doing in the error case inside findByToken
+    //         in user.js. this makes sure that code execution stops and the next thing that gets run is the catch block
+    //         right below here. so, in the end, we call res.status(401).send()
+    //         */
+    //     }
+
+    //     res.send(user);
+    // }).catch((e) => {
+    //     res.status(401).send();
+    // });
+
+    //WE JUST NEED TO SEND THE USER BACK. AUTH DID THE WORK FOR US
+    res.send(req.user); //see how user is on req here? we stored it on req in authenticate
+});
 
 app.listen(port, () => {
     console.log(`started on port ${port}`)

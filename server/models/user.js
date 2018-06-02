@@ -34,6 +34,8 @@ var UserSchema = new mongoose.Schema({
     }]
 })
 
+//you won't see this called explicitly. it's because we're overriding it. it is called behind the scenes
+//our implementation picks off id and email because we don't want to show
 UserSchema.methods.toJSON = function () {
     var user = this;
     var userObject = user.toObject(); //toObject takes a mongoose variable and converts to a JSON object
@@ -51,6 +53,26 @@ UserSchema.methods.generateAuthToken = function () {
 
     return user.save().then(() => {
         return token;
+    });
+};
+
+UserSchema.statics.findByToken = function (token) {
+    var User = this; //instance methods get called with the individual document. model methods get called with the class (see difference in this line in the other two functions)
+    var decoded;
+
+    try {
+        decoded = jwt.verify(token, 'abc123');
+    } catch (e) {
+        // return new Promise((resolve, reject) => {
+        //     reject();
+        // });
+        return Promise.reject('test reject value');
+    }
+
+    return User.findOne({
+        '_id': decoded._id, //quotes are required when you have a dot in the value. not required on _id here. just did it anyway
+        'tokens.token': token,
+        'tokens.access': 'auth'
     });
 };
 
