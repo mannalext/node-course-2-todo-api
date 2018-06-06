@@ -136,6 +136,31 @@ app.get('/users/me', authenticate, (req, res) => {
     res.send(req.user); //see how user is on req here? we stored it on req in authenticate
 });
 
+//need a login route. have a singup route but if you lose your token there's no way to get one back
+//this route will fix that problem
+//POST /users/login {email, password}
+//need to find a user in mongo with the given email and a HASHED PASSWORD equal to the one passed in
+//pick email and password from body
+//res.send the body data
+//fire up server, login with postman, make sure email and password come back
+app.post('/users/login', (req, res) => {
+    var body = _.pick(req.body, ['email', 'password']);
+
+    User.findByCredentials(body.email, body.password).then((user) => {
+        //by this point we're confirming that the email and hashed passwords are equivalent
+        //so since the whole point of this it to "login", and to effectively log someone in you need to give them a token,
+        //let's respond with a new token in the header
+        //we've already got generateAuthToken which makes one based on the unique user we're dealing with 
+        //so give them a token and respond with the user but put the token in the response header
+        return user.generateAuthToken().then((token) => {
+            res.header('x-auth', token).send(user);
+        });
+        //res.send(user);
+    }).catch((e) => {
+        res.status(400).send();
+    });
+});
+
 app.listen(port, () => {
     console.log(`started on port ${port}`)
 });
