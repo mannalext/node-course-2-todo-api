@@ -57,6 +57,18 @@ UserSchema.methods.generateAuthToken = function () {
     });
 };
 
+UserSchema.methods.removeToken = function (token) {
+    var user = this;
+
+    return user.update({
+        $pull: {
+            tokens: {
+                token: token
+            }
+        }
+    });
+};
+
 UserSchema.statics.findByToken = function (token) {
     var User = this; //instance methods get called with the individual document. model methods get called with the class (see difference in this line in the other two functions)
     var decoded;
